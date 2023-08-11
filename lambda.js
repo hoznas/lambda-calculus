@@ -30,27 +30,36 @@ console.log(TO_INT(ONE));
 console.log(TO_INT(TWO));
 console.log(TO_INT(THREE));
 
-const PAIR = (x) => (y) => (p) => p(x)(y);
-const LEFT = (p) => p(TRUE);
-const RIGHT = (p) => p(FALSE);
-//const foo = RIGHT(PAIR(ONE)(TWO))(ADD_ONE)(0);
-
 const INC = (n) => (p) => (x) => p(n(p)(x));
-const SLIDE = (p) => PAIR(RIGHT(p))(INC(RIGHT(p)));
-const DEC = (n) => LEFT(n(SLIDE)(PAIR(ZERO)(ZERO)));
 //const foo = INC(TWO)(ADD_ONE)(0);
 //const foo = DEC(ONE)(TO_INT)(0);
 
 const ADD = (m) => (n) => n(INC)(m);
-const SUB = (m) => (n) => n(DEC)(m);
 const MUL = (m) => (n) => n(ADD(m))(ZERO);
 const POW = (m) => (n) => n(MUL(m))(ONE);
 
 console.log('ADD,SUB,MUL,POW');
 console.log(TO_INT(ADD(THREE)(TWO)));
-console.log(TO_INT(SUB(THREE)(TWO)));
 console.log(TO_INT(MUL(THREE)(TWO)));
 console.log(TO_INT(POW(THREE)(TWO)));
+
+///// section 2 //////
+
+const PAIR = (x) => (y) => (p) => p(x)(y);
+const LEFT = (p) => p(TRUE);
+const RIGHT = (p) => p(FALSE);
+
+console.log('--PAIR--');
+const ONE_TWO_THREE = PAIR(ONE)(PAIR(TWO)(PAIR(THREE)(NIL)));
+console.log(TO_INT(LEFT(ONE_TWO_THREE)));
+console.log(TO_INT(LEFT(RIGHT(ONE_TWO_THREE))));
+console.log(TO_INT(LEFT(RIGHT(RIGHT(ONE_TWO_THREE)))));
+
+console.log('--DEC,SUB--');
+const SLIDE = (p) => PAIR(RIGHT(p))(INC(RIGHT(p)));
+const DEC = (n) => LEFT(n(SLIDE)(PAIR(ZERO)(ZERO)));
+const SUB = (m) => (n) => n(DEC)(m);
+console.log(TO_INT(SUB(THREE)(TWO)));
 
 const LE = (m) => (n) => IS_ZERO(SUB(m)(n));
 
@@ -120,35 +129,13 @@ const RANGE = FIX(RANGE_REC);
 const LENGTH = FOLD((x) => (y) => INC(x))(ZERO);
 console.log(TO_INT(LENGTH(list)));
 
-// console.log('--list(IS_NIL,LENGTH)--');
-// const list3 = RANGE(ONE)(FOUR);
-// console.log(IS_NIL(list3));
-// console.log(TO_INT(LENGTH(list3)));
-// console.log(TO_INT(SUM(list3)));
-// console.log('--------------------');
-// console.log(TO_INT(LEFT(RIGHT(list3))));
-// console.log(TO_INT(LEFT(RIGHT(RIGHT(list3)))));
-// console.log(TO_INT(LEFT(RIGHT(RIGHT(RIGHT(list3))))));
+console.log('--GET_VALUE--');
 
-//console.log(LEFT(RIGHT(RIGHT(RIGHT(numberList))))(TO_INT));
+const GET_VALUE = (cell) => IF(IS_NIL(cell))(ZERO)(LEFT(cell));
+console.log(TO_INT(GET_VALUE(NIL)));
+console.log(TO_INT(GET_VALUE(PAIR(THREE)(NIL))));
 
-// const ONT_TO_HUNDRED = RANGE(ONE)(MUL(TEN)(TEN));
-// const FIZZ_BUZZ = MAP((x) =>
-//   IF(AND(IS_ZERO(MOD(x)(THREE)))(IS_ZERO(MOD(x)(FIVE))))('FizzBuzz')(
-//     IF(IS_ZERO(MOD(x)(THREE)))('Fizz')(
-//       IF(IS_ZERO(MOD(x)(FIVE)))('Buzz')(x(TO_INT)(0))
-//     )
-//   )
-// )(ONT_TO_HUNDRED);
-
-//const Z = (f) => (x) => f((y) => x(x)(y))((x) => f((y) => x(x)(y)));
-
-//const foo = TO_BOOL(LE(THREE)(TWO));
-// const foo = MOD(FIVE)(THREE)(TO_INT)(0);
-// console.log(DIV(FIVE)(TWO)(TO_INT)(0));
-// console.log(foo);
-
-// const TAPE = (l) => (m) => (r) => (p) => p(l)(m)(r);
-const getNext = (tape) => IF(IS_NIL(tape))(PAIR(ZERO)(NIL))(RIGHT(tape));
-const getValue = (tape) => LEFT(getNext(tape));
-console.log(TO_INT(getValue(list)));
+console.log('--GET_NEXT--');
+const GET_NEXT = (cell) => IF(IS_NIL(cell))(NIL)(RIGHT(cell));
+console.log(TO_INT(GET_NEXT(NIL)));
+console.log(TO_INT(LEFT(GET_NEXT(PAIR(THREE)(PAIR(FOUR)(NIL))))));

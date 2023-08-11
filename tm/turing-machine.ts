@@ -127,5 +127,14 @@ console.log('--------------------');
 type Command = '>' | '<' | '+' | '-' | '.' | ',' | Command[];
 const input = [0, 1, 2, 3, 4, 5];
 
-const commands: Command = ['+', '+', '+', ['-', '>', '+', '+', '<'], '>', '.'];
+const commands: Command = [
+  '+',
+  '+',
+  '+',
+  '+',
+  '+',
+  ['-', '>', '+', '+', '+', '+', '+', '<'],
+  '>',
+  '.',
+];
 tm.evalCommands(commands).printAll();

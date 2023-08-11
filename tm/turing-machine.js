@@ -137,5 +137,14 @@ tm.increment().increment().moveRight().increment().moveRight().printAll();
 tm.increment().increment().moveLeft().increment().moveLeft().printAll();
 console.log('--------------------');
 var input = [0, 1, 2, 3, 4, 5];
-var commands = ['+', '+', '+', ['-', '>', '+', '+', '<'], '>', '.'];
+var commands = [
+    '+',
+    '+',
+    '+',
+    '+',
+    '+',
+    ['-', '>', '+', '+', '+', '+', '+', '<'],
+    '>',
+    '.',
+];
 tm.evalCommands(commands).printAll();

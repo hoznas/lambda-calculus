@@ -130,14 +130,14 @@ javascript として実行して動作を確認することもできます。
 
 ```
 // 定義
-const TRUE = x => y => x
-const FALSE = x => y => y
-const IF = c => x => y => c(x)(y)
+const TRUE = (x) => (y) => x;
+const FALSE = (x) => (y) => y;
+const IF = (c) => (x) => (y) => c(x)(y);
 // 説明用コード
-const TO_BOOLEAN = b => b(true)(false)
-console.log(ITO_BOOLEAN(TRUE)) // true
-console.log(IF(TRUE)("yes")("no")) // "yes"
-console.log(IF(FALSE)("yes")("no")) // "no"
+const TO_BOOLEAN = (b) => b(true)(false);
+console.log(TO_BOOLEAN(TRUE)); // true
+console.log(IF(TRUE)('yes')('no')); // "yes"
+console.log(IF(FALSE)('yes')('no')); // "no"
 ```
 
 簡単ですね。
@@ -160,13 +160,17 @@ IF は真偽値 c を引数にとり、それに基づいて必要な処理を�
 
 ```
 // 定義
-const ZERO  = p => n =>       n
-const ONE   = p => n =>     p(n)
-const TWO   = p => n =>   p(p(n))
-const THREE = p => n => p(p(p(n)))
+const ZERO = (p) => (n) => n;
+const ONE = (p) => (n) => p(n);
+const TWO = (p) => (n) => p(p(n));
+const THREE = (p) => (n) => p(p(p(n)));
+const FOUR = (p) => (n) => p(p(p(p(n))));
+const FIVE = (p) => (n) => p(p(p(p(p(n)))));
+const SIX = (p) => (n) => p(p(p(p(p(p(n))))));
+const SEVEN = (p) => (n) => p(p(p(p(p(p(p(n)))))));
 // 説明用コード
-const TO_INT = x => x(n=>n+1)(0)
-console.log(TO_INT(TWO)) // 2
+const TO_INT = (x) => x((n) => n + 1)(0);
+console.log(TO_INT(TWO)); // 2
 ```
 
 え、こんなんでいいの？って気がしますね！
@@ -178,10 +182,11 @@ console.log(TO_INT(TWO)) // 2
 
 ```
 // 定義
-const IS_ZERO = n => n(x=>x(FALSE))(TRUE)
+const IS_ZERO = (n) => n((x) => FALSE)(TRUE);
 // 説明用コード
-console.log(TO_BOOL(IS_ZERO(ZERO))) // TRUE
-console.log(TO_BOOL(IS_ZERO(TWO))) // FALSE
+console.log(TO_BOOLEAN(IS_ZERO(ZERO))); // TRUE
+console.log(TO_BOOLEAN(IS_ZERO(ONE))); // FALSE
+console.log(TO_BOOLEAN(IS_ZERO(TWO))); // FALSE
 ```
 
 もう少し丁寧に説明します。
@@ -213,10 +218,9 @@ console.log(TO_BOOL(IS_ZERO(TWO))) // FALSE
 
 ```
 // 定義
-const INC = n => p => x => x(n(p)(x))
+const INC = (n) => (p) => (x) => p(n(p)(x));
 // 確認用コード
-const INC_TWO = INC(TWO)
-console.log(TO_INT(INC_TWO)) // 3
+console.log(TO_INT(INC(TWO))); // 3
 ```
 
 パッと見で理解するのは少し難しくなってきたかもしれませんが、問題ありません。
@@ -242,13 +246,14 @@ INC を使うと、たし算とかけ算ができるようになります。
 ついでに累乗も定義できます。
 
 ```
-const ADD = m => n => n(INC)(m) // m+n
-const MUL = m => n => n(ADD(m))(ZERO) // m*n
-const POW = m => n => n(MUL(m))(ONE) // m^n
+// 定義
+const ADD = (m) => (n) => n(INC)(m); // m+n
+const MUL = (m) => (n) => n(ADD(m))(ZERO); // m*n
+const POW = (m) => (n) => n(MUL(m))(ONE); // m^n
 // 確認用コード
-console.log(TO_INT(ADD(TWO)(THREE))) // 5
-console.log(TO_INT(MUL(TWO)(THREE))) // 6
-console.log(TO_INT(POW(TWO)(THREE))) // 8
+console.log(TO_INT(ADD(TWO)(THREE))); // 5
+console.log(TO_INT(MUL(TWO)(THREE))); // 6
+console.log(TO_INT(POW(TWO)(THREE))); // 8
 ```
 
 ADD の説明をします。

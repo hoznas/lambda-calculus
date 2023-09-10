@@ -49,14 +49,12 @@ const SUB = m => n => m(DEC)(n)
 ```
 
 ではそのような DEC を作ってみましょう。
-例えば DEC(TWO)だと `p => n => p(p(n))`から p の適用 を一個取れば ONE (`p=>n=>p(n)`)ができそうですね！
+例えば DEC(TWO)だと `p=>n=>p(p(n))`から p の適用 を一個取れば ONE (`p=>n=>p(n)`)ができそうですね！
 
 皆さんできますか？
 私は全然できませんでした。
 
-DEC は簡単に見えて、実装は非常に大変です。
-
-とある部品を使うことで DEC が
+DEC は簡単に見えて、実装は非常に大変ですのでいくつか部品が必要です。
 
 ## PAIR と LEFT、RIGHT の実装
 
@@ -73,18 +71,18 @@ PAIR は二つの組み(ペア)を作る関数です。
 
 ```
 // 定義
-const PAIR = l => r => f => f(l)(r)
-const LEFT = l => r => l
-const RIGHT = l => r => r
+const PAIR = (l) => (r) => (f) => f(l)(r);
+const LEFT = (p) => p((l) => (r) => l);
+const RIGHT = (p) => p((l) => (r) => r);
 // 確認用コード
-const create = id => name => age => PAIR(id)(PAIR(name)(age))
-const getId = LEFT
-const getName = user => LEFT(RIGHT(user))
-const getAge = user => RIGHT(RIGHT(user))
-const user1 = create("001")("taro")("20")
-console.log(getId(user1)) // 001
-console.log(getName(user1)) // taro
-console.log(getAge(user1)) // 20
+const create = (id) => (name) => (age) => PAIR(id)(PAIR(name)(age));
+const getId = LEFT;
+const getName = (user) => LEFT(RIGHT(user));
+const getAge = (user) => RIGHT(RIGHT(user));
+const user1 = create('001')('taro')('20');
+console.log(getId(user1)); // 001
+console.log(getName(user1)); // taro
+console.log(getAge(user1)); // 20
 ```
 
 PAIR は IF と引数の順番が違うだけの関数ですね。
@@ -97,16 +95,18 @@ PAIR は IF と引数の順番が違うだけの関数ですね。
 
 SLIDE は`[0,0]`から始まって、`[0,0]`→`[0,1]`→`[2,3]`→`[3,4]`→`[4,5]`のように右から左にスライドすることで、`[n-1,n]`を作る関数です。
 
+ただ、`SLIDE()`の時は、`[0,0]`になります。
+
 ```
 // 定義
-const SLIDE = p => PAIR(RIGHT(p))(INC(RIGHT(p)));
+const SLIDE = (p) => PAIR(RIGHT(p))(INC(RIGHT(p)));
 // 確認用コード
-const slide1 = SLIDE(PAIR(ZERO)(ZERO))
-const slide2 = SLIDE(SLIDE(PAIR(ZERO)(ZERO)))
-const slide3 = SLIDE(SLIDE(SLIDE(PAIR(ZERO)(ZERO))))
-console.log(TO_INT(LEFT(slide1)), TO_INT(RIGHT(slide1))) // 0,1
-console.log(TO_INT(LEFT(slide2)), TO_INT(RIGHT(slide2))) // 1,2
-console.log(TO_INT(LEFT(slide3)), TO_INT(RIGHT(slide3))) // 2,3
+const slide1 = SLIDE(PAIR(ZERO)(ZERO));
+const slide2 = SLIDE(SLIDE(PAIR(ZERO)(ZERO)));
+const slide3 = SLIDE(SLIDE(SLIDE(PAIR(ZERO)(ZERO))));
+console.log(TO_INT(LEFT(slide1)), TO_INT(RIGHT(slide1))); // 0,1
+console.log(TO_INT(LEFT(slide2)), TO_INT(RIGHT(slide2))); // 1,2
+console.log(TO_INT(LEFT(slide3)), TO_INT(RIGHT(slide3))); // 2,3
 ```
 
 SLIDE を n 回適用すると、LEFT で n-1 が取得できますね。
@@ -118,13 +118,13 @@ SLIDE を n 回適用すると、LEFT で n-1 が取得できますね。
 
 ```
 // 定義
-const DEC = n => LEFT(n(SLIDE)(PAIR(ZERO)(ZERO)))
+const DEC = (n) => LEFT(n(SLIDE)(PAIR(ZERO)(ZERO)));
 // 確認用コード
-console.log(TO_INT(DEC(TWO))) // ONE
+console.log(TO_INT(DEC(TWO))); // 1
 ```
 
 なお、この DEC では負数を扱うことができません。
-SLIDE の使用により DEC(ZERO)は ZERO に評価されます。
+SLIDE の仕様により DEC(ZERO)は ZERO に評価されます。（これ重要です！）
 
 # ひき算
 
@@ -134,11 +134,11 @@ SLIDE の使用により DEC(ZERO)は ZERO に評価されます。
 // 定義
 const SUB = (m) => (n) => n(DEC)(m);
 // 確認用コード
-console.log(TO_INT(SUB(FOUR)(THREE))) // 1
+console.log(TO_INT(SUB(FOUR)(THREE))); // 1
 ```
 
 長く大変な道のりでしたがようやくひき算を実装できました！
-なお、SLIDE や DEC の使用により、m < n のとき、DEC(m)(n)の計算結果が 0 になります。
+なお、DEC の仕様により、m < n のとき、DEC(m)(n)の計算結果が 0 になります。
 このことは覚えていてください。
 
 # わり算の準備
@@ -172,21 +172,23 @@ LE(less or equal, <=)を実装します。
 
 ```
 // 定義
-const LE = m => n => IS_ZERO(SUB(m)(n))
+const LE = (m) => (n) => IS_ZERO(SUB(m)(n));
 // 確認用コード
-console.log(IF(LE(ONE)(TWO))("yes")("no")) // yes
-console.log(IF(LE(TWO)(TWO))("yes")("no")) // yes
-console.log(IF(LE(TWO)(ONE))("yes")("no")) // no
+console.log(IF(LE(ONE)(TWO))('yes')('no')); // yes
+console.log(IF(LE(TWO)(TWO))('yes')('no')); // yes
+console.log(IF(LE(TWO)(ONE))('yes')('no')); // no
 ```
 
 さっき定義した SUB がちょうどいい感じに働いていますね。
 
-### 無名再帰関数
+## 無名再帰関数
 
 割り算(DIV)と余り(MOD)を計算するするには繰り返し処理が必要です。
 ですが、ラムダ計算には for 文や while 文といった繰り返しの制御構文がありません。
 
-なので、再帰処理をする仕組みが必要です。
+なので、繰り返しは再帰呼び出しで実現させます。
+
+では、どうやって再起呼び出しをするのでしょうか？
 普通は再帰関数は自分自身を呼び出せばいいのですが、変数のないラムダ計算では再帰をさせるのに一工夫が必要です。
 
 例えば以下は有効なのプログラムです。
@@ -199,73 +201,156 @@ console.log(TO_INT(DIV_TEST(MUL(FOUR)(FOUR))(THREE)(ZERO)))
 ```
 
 上記は一応正しい計算結果を得ることができます。
-これは`const DIV_TEST = `により名前がついたことで再帰呼び出しができています。
-ですが、ラムダ計算では const による命名は不要なので、別の方法で再帰を実現する必要があります。
 
-### Z コンビネータ
+ですが、ラムダ計算では const による命名は不要なので、これは厳密にはラムダ計算ではありません。
+というのもラムダ計算に存在しない`const DIV_TEST = ...`で名前をつけられた`DIV_TEST`を参照して再起呼び出しをするのは、
+ここではルール違反だからです。
 
-これを解決できるのは、一般的に Z コンビネータと呼ばれるものです。
+## Z コンビネータ
+
+これを解決できるのは、Z コンビネータと呼ばれるものです。
 今回の記事では使いませんが一応紹介します。
 詳しい紹介は「Z コンビネータ」で検索してみてください。
 
 ```
-const Z = f => x => f(y => x(x)(y))(x => f(y => x(x)(y)))
+const Z = (f) => (x) => f((y) => x(x)(y))((x) => f((y) => x(x)(y)));
 ```
 
-### FIX コンビネータ
+## FIX コンビネータ
 
-さて、もう少しシンプルな FIX 関数を紹介します。
+さて、もう少しシンプルに再帰処理を実現できる FIX 関数を紹介します。
 
-````
-
+```
 const FIX = (f) => f(f);
-
 ```
 
+引数fを一つだけ取って、fを引数にfを呼び出しています。
 
+でもこれだけ見てもどうやって使うのかイメージわかないと思います。
+
+
+## MOD(割り算の余り)の定義
+
+では、先ほど定義したFIXを使って、繰り返し計算が必要な、割り算の"あまり"を計算するMODを定義してみましょう
 
 ```
 // 定義
-const DIV_REC = (f) => (m) => (n) => (c) =>
+const MOD_LOOP = (f) => (m) => (n) =>
+  IF(LE(n)(m))((x) => f(f)(SUB(m)(n))(n)(x))(m);
+const MOD = FIX(MOD_LOOP);
+// 確認用コード
+console.log(TO_INT(MOD(FIVE)(THREE))); // 2
+```
+
+計算してみましょう
+
+```
+MOD(FIVE)(THREE)
+= FIX(MOD_LOOP)(FIVE)(THREE)
+= MOD(MOD_LOOP)(FIVE)(THREE)
+= (f => m => n => IF(LE(n)(m))(x => f(f)(SUB(m)(n))(n)(x))(m))
+    (MOD_LOOP)(FIVE)(THREE)
+= IF(LE(THREE)(FIVE))(x => MOD_LOOP(MOD_LOOP)(SUB(FIVE)(THREE))(THREE)(x))(FIVE)
+= x => MOD_LOOP(MOD_LOOP)(SUB(FIVE)(THREE))(THREE)(x)
+= x => MOD_LOOP(MOD_LOOP)(TWO)(THREE)(x)
+```
+
+計算が途中で止まって、数値ではなく、関数が返ってきましたね（数値も関数ですが・・・）
+これは「5割る3の余り」は、「2割る3の余り」を返す関数とみなすことができます。
+でも、どうしてx => なんとか(x)のように関数で包む必要があるのでしょうか？
+実はこれは遅延評価と呼ばれるもので、実行を遅らせる効果があります。
+ではなぜ評価を遅らせる必要があるのでしょうか？
+それはIF(FALSE)(a)(b)のケースでもJavascriptではaが評価されてしまうので、
+必要な記述です。
+では、これを仮にINC(MOD(FIVE)(THREE))を計算してみましょう。
+
+```
+INC(MOD(FIVE)(THREE))
+= INC(x=>MOD(MOD)(TWO)(THREE)(x))
+= (n=>p=>x=>p(n(p)(x)))(y=>MOD(MOD)(TWO)(THREE)(y)) // INC=(n=>p=>x=>x(n(p)(x)))
+= p=>x=>p((y=>
+    MOD(MOD)(TWO)(THREE) // Pとする
+      (y))(p)(x))
+= p=>x=>p((y=>TWO(y))(p)(x))
+= p=>x=>p(TWO(p)(x)) // yにpを適用
+= p=>x=>p(p(p(x)))
+= THREE
+
+P = MOD(MOD)(TWO)(THREE)
+= (f => m => n =>IF(LE(n)(m))((x) => f(f)(SUB(m)(n))(n)(x))(m))
+    (MOD)(TWO)(THREE)
+= IF(LE(THREE)(TWO))((x) => MOD(MOD)(SUB(TWO)(THREE))(THREE)(x))(TWO)
+= TWO
+```
+
+`1 + (5➗3の余り) `は`1+2 = 3`なので、あっていますね！
+
+constで変数宣言しなくても問題なく再帰処理ができます。
+
+## DIVの定義
+
+割り算の商を計算するDIVを作成します。
+
+```
+// 定義
+const DIV_LOOP = (f) => (m) => (n) => (c) =>
   IF(LE(n)(m))((x) => f(f)(SUB(m)(n))(n)(INC(c))(x))(c);
-const DIV = (m) => (n) => FIX(DIV_REC)(m)(n)(ZERO);
+const DIV = (m) => (n) => FIX(DIV_LOOP)(m)(n)(ZERO);
 // 確認用コード
-console.log(TO_INT(DIV(MUL(FOUR)(FOUR))(THREE)))
+console.log(TO_INT(DIV(SEVEN)(THREE))); //2
 ```
 
-そこでラムダ計算で再帰関数を使うために、FIX 関数が必要です。
-関数を受け取って、自分自身の参照を渡すことで再帰が出来るようになります。
-（本当は Y コンビネータや Z コンビネータを使うのですが私が書くとうまく動きません。）
+では実際に式を展開してみましょう。
 
-FIX 関数を使って、比較的簡単な「余り」を計算する関数を作ります。
+前回と同様に遅延評価されるのでINCも使います。
 
 ```
-
-// 定義
-const MOD_REC = (f) => (m) => (n) =>
-IF(LE(n)(m))((x) => f(f)(SUB(m)(n))(n)(x))(m);
-const MOD = FIX(MOD_REC);
-// 確認用コード
-MOD(MUL(THREE)(THREE))(ADD(TWO)(THREE)) // 9➗5 の余り 4
-
+INC(DIV(SEVEN)(THREE))
+= INC(m=>n=>(FIX(DIV_LOOP)(m)(n)(ZERO))(SEVEN)(THREE))
+= INC(FIX(DIV_LOOP)(SEVEN)(THREE)(ZERO))
+= INC(DIV_LOOP(DIV_LOOP)(SEVEN)(THREE)(ZERO))
+= INC((f=>m=>n=>c=>IF(LE(n)(m))(x=>f(f)(SUB(m)(n))(n)(INC(c))(x))(c))
+    (DIV_LOOP)(SEVEN)(THREE)(ZERO))
+= INC(IF(LE(THREE)(SEVEN))(x=>DIV_LOOP(DIV_LOOP)(SUB(SEVEN)(THREE))(THREE)(INC(ZERO))(x))(ZERO))
+= INC(x=>DIV_LOOP(DIV_LOOP)(SUB(SEVEN)(THREE))(THREE)(INC(ZERO))(x))
+= INC(x=>
+    DIV_LOOP(DIV_LOOP)(FOUR)(THREE)(ONE)
+      (x))
+= INC(x=>
+    DIV_LOOP(DIV_LOOP)(FOUR)(THREE)(ONE)
+      (x))
+= INC(x=>
+    (f=>m=>n=>c=>IF(LE(n)(m))(x => f(f)(SUB(m)(n))(n)(INC(c))(x))(c))
+      (DIV_LOOP)(FOUR)(THREE)(ONE)
+      (x))
+= INC(x=>
+    (IF(LE(THREE)(FOUR))
+      (y => DIV_LOOP(DIV_LOOP)(SUB(FOUR)(THREE))(THREE)(INC(c))(y))
+    (ONE)
+  )(x))
+= INC(x=>
+    (IF(LE(THREE)(FOUR))
+      (y => (f=>m=>n=>c=>IF(LE(n)(m))(x => f(f)(SUB(m)(n))(n)(INC(c))(x))(c))(DIV_LOOP)(SUB(FOUR)(THREE))(THREE)(INC(c))(y))
+    (ONE)
+  )(x))
+= INC(x=>ONE(x))
+= (n=>p=>z=>z(n(p)(z)))(x=>ONE(x))
+= (p=>z=>z(x=>ONE(x)(p)(z)))
+= (p=>z=>z(x=>ONE(x)(p)(z)))
+= (p=>z=>z(x=>(x(p))(z)))
+= p=>z=>z(z(p))
+= TWO
 ```
 
-一工夫必要な割り算は以下です。
-
+## さあ展開しよう！
+今回の記事で一番複雑なDIVを展開してみましょう。
+```
+console.log((x=>x(n=>n+1)(0))(((m)=>(n)=>((f)=>f(f))((f)=>(m)=>(n)=>(c)=>((c)=>(x)=>(y)=>c(x)(y))(((m)=>(n)=>((n)=>n((x)=>(x)=>(y)=>y)((x)=>(y)=>x))(((m)=>(n)=>n((n)=>((p)=>p((l)=>(r)=>l))(n((p)=>((l)=>(r)=>(f)=>f(l)(r))(((p)=>p((l)=>(r)=>r))(p))(((n)=>(p)=>(x)=>p(n(p)(x)))(((p)=>p((l)=>(r)=>r))(p))))(((l)=>(r)=>(f)=>f(l)(r))((p)=>(n)=>n)((p)=>(n)=>n))))(m))(m)(n)))(n)(m))((x)=>f(f)(((m)=>(n)=>n((n)=>((p)=>p((l)=>(r)=>l))(n((p)=>((l)=>(r)=>(f)=>f(l)(r))(((p)=>p((l)=>(r)=>r))(p))(((n)=>(p)=>(x)=>p(n(p)(x)))(((p)=>p((l)=>(r)=>r))(p))))(((l)=>(r)=>(f)=>f(l)(r))((p)=>(n)=>n)((p)=>(n)=>n))))(m))(m)(n))(n)(((n)=>(p)=>(x)=>p(n(p)(x)))(c))(x))(c))(m)(n)((p)=>(n)=>n))(p =>n=>p(p(p(p(p(p(p(n))))))))(p=>n=>p(p(p(n))))))
 ```
 
-// 定義
-const DIV_REC = (f) => (m) => (n) => (c) =>
-IF(LE(n)(m))((x) => f(f)(SUB(m)(n))(n)(INC(c))(x))(c);
-const DIV = (m) => (n) => FIX(DIV_REC)(m)(n)(ZERO);
-// 確認用コード
-DIV(MUL(THREE)(THREE))(FOUR) // 2
 
-```
 
 # 今回はここまで
 
 今回は基礎的な演算と再帰の仕組みを作りました。
 次回はリスト構造（配列）と NIL、MAP、REDUCE を定義します。
-```
-````

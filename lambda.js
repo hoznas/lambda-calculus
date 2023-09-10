@@ -20,9 +20,9 @@ const TO_INT = (proc) => proc((n) => n + 1)(0);
 const IS_ZERO = (n) => n((x) => FALSE)(TRUE);
 
 console.log('--bool--');
-console.log(TO_BOOL(IS_ZERO(ZERO)));
-console.log(TO_BOOL(IS_ZERO(ONE)));
-console.log(TO_BOOL(IS_ZERO(TWO)));
+console.log(TO_BOOLEAN(IS_ZERO(ZERO)));
+console.log(TO_BOOLEAN(IS_ZERO(ONE)));
+console.log(TO_BOOLEAN(IS_ZERO(TWO)));
 
 console.log('--int--');
 console.log(TO_INT(ZERO));

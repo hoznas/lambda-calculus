@@ -1,5 +1,6 @@
 import {
   ADD,
+  FALSE,
   FIVE,
   FOUR,
   IF,
@@ -7,16 +8,38 @@ import {
   IS_ZERO,
   MUL,
   ONE,
+  POW,
   SEVEN,
   SIX,
   THREE,
+  TO_BOOLEAN,
   TO_INT,
+  TRUE,
   TWO,
   ZERO,
 } from './blog1.mjs';
 
 console.log('====== blog2.mjs ======');
-console.log(ADD, MUL);
+console.log({
+  ADD,
+  FALSE,
+  FIVE,
+  FOUR,
+  IF,
+  INC,
+  IS_ZERO,
+  MUL,
+  ONE,
+  POW,
+  SEVEN,
+  SIX,
+  THREE,
+  TO_BOOLEAN,
+  TO_INT,
+  TRUE,
+  TWO,
+  ZERO,
+});
 
 // 定義
 const PAIR = (l) => (r) => (f) => f(l)(r);
@@ -77,99 +100,34 @@ const DIV = (m) => (n) => FIX(DIV_LOOP)(m)(n)(ZERO);
 // 確認用コード
 console.log(TO_INT(DIV(SEVEN)(THREE))); //2
 
-const SUB2 = (m) => (n) =>
-  n((n) =>
-    ((p) => p((l) => (r) => l))(
-      n((p) =>
-        (
-          (l) => (r) => (f) =>
-            f(l)(r)
-        )(((p) => p((l) => (r) => r))(p))(
-          (
-            (n) => (p) => (x) =>
-              p(n(p)(x))
-          )(((p) => p((l) => (r) => r))(p))
-        )
-      )(
-        (
-          (l) => (r) => (f) =>
-            f(l)(r)
-        )((p) => (n) => n)((p) => (n) => n)
-      )
-    )
-  )(m);
-console.log(TO_INT(SUB2(SIX)(THREE))); // 3
-console.log(
-  TO_INT(
-    (
-      (m) => (n) =>
-        ((f) => f(f))(
-          (f) => (m) => (n) => (c) =>
-            (
-              (c) => (x) => (y) =>
-                c(x)(y)
-            )(
-              (
-                (m) => (n) =>
-                  ((n) => n((x) => (x) => (y) => y)((x) => (y) => x))(
-                    (
-                      (m) => (n) =>
-                        n((n) =>
-                          ((p) => p((l) => (r) => l))(
-                            n((p) =>
-                              (
-                                (l) => (r) => (f) =>
-                                  f(l)(r)
-                              )(((p) => p((l) => (r) => r))(p))(
-                                (
-                                  (n) => (p) => (x) =>
-                                    p(n(p)(x))
-                                )(((p) => p((l) => (r) => r))(p))
-                              )
-                            )(
-                              (
-                                (l) => (r) => (f) =>
-                                  f(l)(r)
-                              )((p) => (n) => n)((p) => (n) => n)
-                            )
-                          )
-                        )(m)
-                    )(m)(n)
-                  )
-              )(n)(m)
-            )((x) =>
-              f(f)(
-                (
-                  (m) => (n) =>
-                    n((n) =>
-                      ((p) => p((l) => (r) => l))(
-                        n((p) =>
-                          (
-                            (l) => (r) => (f) =>
-                              f(l)(r)
-                          )(((p) => p((l) => (r) => r))(p))(
-                            (
-                              (n) => (p) => (x) =>
-                                p(n(p)(x))
-                            )(((p) => p((l) => (r) => r))(p))
-                          )
-                        )(
-                          (
-                            (l) => (r) => (f) =>
-                              f(l)(r)
-                          )((p) => (n) => n)((p) => (n) => n)
-                        )
-                      )
-                    )(m)
-                )(m)(n)
-              )(n)(
-                (
-                  (n) => (p) => (x) =>
-                    p(n(p)(x))
-                )(c)
-              )(x)
-            )(c)
-        )(m)(n)((p) => (n) => n)
-    )(MUL(FOUR)(FOUR))(THREE)
-  )
-);
+export {
+  ADD,
+  DEC,
+  DIV,
+  FALSE,
+  FIVE,
+  FIX,
+  FOUR,
+  IF,
+  INC,
+  IS_ZERO,
+  LE,
+  LEFT,
+  MOD,
+  MUL,
+  ONE,
+  PAIR,
+  POW,
+  RIGHT,
+  SEVEN,
+  SIX,
+  SLIDE,
+  SUB,
+  THREE,
+  TO_BOOLEAN,
+  TO_INT,
+  TRUE,
+  TWO,
+  Z,
+  ZERO,
+};

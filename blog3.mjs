@@ -37,6 +37,10 @@ console.log('====== blog3.mjs ======');
 // const RIGHT = (p) => p(FALSE); // 定義済み
 const NIL = FALSE;
 const IS_NIL = (x) => x((a) => (b) => (c) => FALSE)(TRUE);
+const list = PAIR(ONE)(PAIR(TWO)(PAIR(THREE)(PAIR(FOUR)(NIL))));
+// 確認用コード
+console.log(TO_BOOLEAN(IS_NIL(list))); // FALSE
+console.log(TO_BOOLEAN(IS_NIL(NIL))); // TRUE
 
 // 確認用コード
 const TO_ARRAY = (list) => {
@@ -45,7 +49,7 @@ const TO_ARRAY = (list) => {
   }
   return [TO_INT(LEFT(list)), ...TO_ARRAY(RIGHT(list))];
 };
-const list = PAIR(ONE)(PAIR(TWO)(PAIR(THREE)(PAIR(FOUR)(NIL))));
+// 確認用コード
 console.log(TO_INT(LEFT(list))); // 1
 console.log(TO_INT(LEFT(RIGHT(list)))); // 2
 console.log(TO_INT(LEFT(RIGHT(RIGHT(list))))); // 3
@@ -69,6 +73,13 @@ console.log(TO_ARRAY(doubled)); // [2,4,6,8]
 const SUM = (m) => (n) => ADD(m)(n);
 const doubledSum = FOLD(SUM)(ZERO)(doubled);
 console.log(TO_INT(doubledSum)); // 20
+console.log(
+  TO_INT(
+    FOLD(SUM)(ZERO)(
+      MAP(DOUBLE)(PAIR(ONE)(PAIR(TWO)(PAIR(THREE)(PAIR(FOUR)(NIL)))))
+    )
+  )
+); // 20
 
 export {
   ADD,

@@ -197,21 +197,23 @@ console.log(TO_BOOLEAN(IS_ZERO(TWO))); // FALSE
 
 もう少し丁寧に説明します。
 
-- ZERO のとき
-  - IS_ZERO(ZERO)
-  - (n=>n(x=>x(FALSE))(TRUE))(ZERO) // IS_ZERO を展開
-  - ZERO(x=>x(FALSE))(TRUE) // n は ZERO
-  - TRUE // ZERO は FALSE と同じで第２引数を返す
-- TWO のとき
-  - IS_ZERO(ZERO)
-  - (n=>n(x=>x(FALSE))(TRUE))(TWO) // IS_ZERO を展開
-  - TWO(x=>x(FALSE))(TRUE) // n は TWO
-  - (p=>n=>p(p(n)))(x=>x(FALSE))(TRUE) // TWO を展開
-  - (n=>(x=>x(FALSE))((x=>x(FALSE))(n)))(TRUE) // p は x=>x(FALSE)
-  - (x=>x(FALSE))((x=>x(FALSE))(TRUE)) // n は TRUE
-  - (x=>x(FALSE))(TRUE(FALSE)) // (x=>x(FALSE))(TRUE)において、x は TRUE
-  - TRUE(FALSE)(FALSE) // x は TRUE
-  - FALSE //TRUE は第 1 引数を返す
+```
+//ZERO のとき
+  IS_ZERO(ZERO)
+  (n=>n(x=>x(FALSE))(TRUE))(ZERO) // IS_ZERO を展開
+  ZERO(x=>x(FALSE))(TRUE) // n は ZERO
+  TRUE // ZERO は FALSE と同じで第２引数を返す
+//TWO のとき
+  IS_ZERO(ZERO)
+  (n=>n(x=>x(FALSE))(TRUE))(TWO) // IS_ZERO を展開
+  TWO(x=>x(FALSE))(TRUE) // n は TWO
+  (p=>n=>p(p(n)))(x=>x(FALSE))(TRUE) // TWO を展開
+  (n=>(x=>x(FALSE))((x=>x(FALSE))(n)))(TRUE) // p は x=>x(FALSE)
+  (x=>x(FALSE))((x=>x(FALSE))(TRUE)) // n は TRUE
+  (x=>x(FALSE))(TRUE(FALSE)) // (x=>x(FALSE))(TRUE)において、x は TRUE
+  TRUE(FALSE)(FALSE) // x は TRUE
+  FALSE //TRUE は第 1 引数を返す
+```
 
 これを手書きで行うと、大きな達成感を感じることができます。
 ぜひ手書きで計算してみてください。

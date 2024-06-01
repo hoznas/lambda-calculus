@@ -60,22 +60,27 @@ console.log(TO_BOOLEAN(IS_NIL(NIL))); // TRUE
 console.log(TO_BOOLEAN(IS_NIL(RIGHT(RIGHT(RIGHT(RIGHT(list))))))); // TRUE
 
 // 定義
-const MAP_LOOP = (s) => (f) => (l) =>
-  IF(IS_NIL(l))(NIL)((x) => PAIR(f(LEFT(l)))(s(s)(f)(RIGHT(l)))(x));
-const MAP = FIX(MAP_LOOP);
 const FOLD_LOOP = (s) => (f) => (r) => (l) =>
   IF(IS_NIL(l))(r)((x) => s(s)(f)(f(r)(LEFT(l)))(RIGHT(l))(x));
 const FOLD = FIX(FOLD_LOOP);
+const REVERSE = (l) => FOLD((acc) => (x) => PAIR(x)(acc))(NIL)(l);
+const MAP = (f) => (l) =>
+  FOLD((acc) => (x) => PAIR(f(x))(acc))(NIL)(REVERSE(l));
 // 確認用コード
 const DOUBLE = (n) => ADD(n)(n);
 const doubled = MAP(DOUBLE)(list);
 console.log(TO_ARRAY(doubled)); // [2,4,6,8]
-const SUM = (m) => (n) => ADD(m)(n);
-const doubledSum = FOLD(SUM)(ZERO)(doubled);
+
+const reversed = REVERSE(list);
+console.log('x', TO_ARRAY(reversed));
+const map2 = MAP(DOUBLE)(list);
+console.log('y', TO_ARRAY(map2));
+
+const doubledSum = FOLD(ADD)(ZERO)(doubled);
 console.log(TO_INT(doubledSum)); // 20
 console.log(
   TO_INT(
-    FOLD(SUM)(ZERO)(
+    FOLD(ADD)(ZERO)(
       MAP(DOUBLE)(PAIR(ONE)(PAIR(TWO)(PAIR(THREE)(PAIR(FOUR)(NIL)))))
     )
   )

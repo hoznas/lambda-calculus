@@ -18,8 +18,8 @@ const clone = (
   tm: TM,
   arg: {
     left?: number[];
-    right?: number[];
     current?: number;
+    right?: number[];
   }
 ): TM => {
   return {
@@ -62,11 +62,8 @@ const _print = (tape: TM): TM => {
   return tape;
 };
 const loop = (tape: TM, proc: (tm: TM) => TM): TM => {
-  let tm = tape;
-  while (tm.current !== 0) {
-    tm = proc(tm);
-  }
-  return tm;
+  if (tape.current === 0) return tape;
+  return loop(proc(tape), proc);
 };
 const show = (tape: TM): string => {
   return (
@@ -78,25 +75,21 @@ const show = (tape: TM): string => {
   );
 };
 
-const evaluate = (tape: TM, code: Command[]): TM => {
-  let tm = tape;
-  for (const command of code) {
-    console.log(show(tape), command);
-    if (command === INC) {
-      tm = inc(tm);
-    } else if (command === DEC) {
-      tm = dec(tm);
-    } else if (command === RIGHT) {
-      tm = right(tm);
-    } else if (command === LEFT) {
-      tm = left(tm);
-    } else if (command === PRINT) {
-      tm = _print(tm);
-    } else if (command instanceof Array) {
-      tm = loop(tm, (tm) => evaluate(tm, command));
-    }
-  }
-  return tm;
+const evaluate = (tape: TM, code: Command[], index = 0): TM => {
+  if (index >= code.length) return tape;
+  const tm = evaluateCommand(tape, code[index]);
+  return evaluate(tm, code, index + 1);
+};
+
+const evaluateCommand = (tm: TM, command: Command): TM => {
+  console.log(show(tape), command);
+  if (command === INC) return inc(tm);
+  if (command === DEC) return dec(tm);
+  if (command === RIGHT) return right(tm);
+  if (command === LEFT) return left(tm);
+  if (command === PRINT) return _print(tm);
+  if (command instanceof Array) return loop(tm, (tm) => evaluate(tm, command));
+  throw new Error('Unknown command');
 };
 
 const code = [

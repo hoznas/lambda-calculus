@@ -1,162 +1,91 @@
-enum CommandType {
-  INC,
-  DEC,
-  RIGHT,
-  LEFT,
-  LOOP,
-  PRINT,
-}
+type FUNC = (tape: Tape) => Tape;
 
-const CommandTypeToString = (type: CommandType): string => {
-  switch (type) {
-    case CommandType.INC:
-      return 'INC';
-    case CommandType.DEC:
-      return 'DEC';
-    case CommandType.RIGHT:
-      return 'RIGHT';
-    case CommandType.LEFT:
-      return 'LEFT';
-    case CommandType.LOOP:
-      return 'LOOP';
-    case CommandType.PRINT:
-      return 'PRINT';
-  }
+const cons = <T>(value: T, stack: T[]): T[] => {
+  return [value, ...stack];
 };
+const car = <T>(stack: T[]): T => stack[0];
+const cdr = <T>(stack: T[]): T[] => stack.slice(1);
 
-type Command = {
-  type: CommandType;
-  value?: Command[];
-};
+const carOrZero = (stack: number[]): number => stack[stack.length - 1] ?? 0;
 
-const showCommand = (command: Command): string => {
-  if (command.value) {
-    const innerCommands = command.value.map(showCommand).join(', ');
-    return `${CommandTypeToString(command.type)} [${innerCommands}]`;
-  } else {
-    return CommandTypeToString(command.type);
-  }
-};
+const isNil = <T>(list: T[]): boolean => list.length === 0;
+const isZero = (n: number): boolean => n === 0;
 
-const INC: Command = { type: CommandType.INC };
-const DEC: Command = { type: CommandType.DEC };
-const RIGHT: Command = { type: CommandType.RIGHT };
-const LEFT: Command = { type: CommandType.LEFT };
-const PRINT: Command = { type: CommandType.PRINT };
-const LOOP = (value: Command[]): Command => ({ type: CommandType.LOOP, value });
+type Tape = [
+  // TODO: church number
+  number[],
+  number,
+  number[]
+];
 
-class TM {
-  left: number[] = [];
-  current = 0;
-  right: number[] = [];
-}
+const newTape =
+  (leftTape: number[]) => (current: number) => (rightTape: number[]) =>
+    cons(leftTape, cons<number | number[]>(current, rightTape)) as Tape;
 
-const clone = (
-  tm: TM,
-  arg: {
-    left?: number[];
-    current?: number;
-    right?: number[];
-  }
-): TM => ({
-  left: arg.left ?? tm.left,
-  right: arg.right ?? tm.right,
-  current: arg.current ?? tm.current,
-});
+const leftTape = (tape: Tape): number[] => car(tape) as number[];
+const current = (tape: Tape): number => car(cdr(tape)) as number;
+const rightTape = (tape: Tape): number[] => cdr(cdr(tape)) as number[];
 
-const inc = (tm: TM): TM => clone(tm, { current: tm.current + 1 });
-const dec = (tm: TM): TM => clone(tm, { current: tm.current - 1 });
-const right = (tm: TM): TM => {
-  tm.left.push(tm.current);
-  const newLeft = tm.left;
-  const newCurrent = tm.right.pop() ?? 0;
-  const newRight = tm.right;
-  return {
-    left: newLeft,
-    current: newCurrent,
-    right: newRight,
-  };
-};
-const left = (tm: TM): TM => {
-  tm.right.push(tm.current);
-  const newRight = tm.right;
-  const newCurrent = tm.left.pop() ?? 0;
-  const newLeft = tm.left;
-  return {
-    left: newLeft,
-    current: newCurrent,
-    right: newRight,
-  };
-};
-const _print = (tm: TM): TM => {
-  console.log(String.fromCharCode(tm.current));
-  return tm;
-};
-const loop = (tm: TM, proc: (tm: TM) => TM): TM => {
-  if (tm.current === 0) return tm;
-  return loop(proc(tm), proc);
-};
-const show = (tm: TM): string => {
-  return (
-    '[' +
-    tm.left.join(',') +
-    `,[${tm.current}], ` +
-    tm.right.reverse().join(',') +
-    ']'
+const inc = (tape: Tape): Tape =>
+  newTape(leftTape(tape))(current(tape) + 1)(rightTape(tape));
+
+const dec = (tape: Tape): Tape =>
+  newTape(leftTape(tape))(current(tape) - 1)(rightTape(tape));
+
+const right = (tape: Tape): Tape =>
+  newTape(cons(current(tape), leftTape(tape)))(carOrZero(rightTape(tape)))(
+    cdr(rightTape(tape))
   );
+
+const left = (tape: Tape): Tape =>
+  newTape(cdr(leftTape(tape)))(carOrZero(leftTape(tape)))(
+    cons(current(tape), rightTape(tape))
+  );
+
+const _print: FUNC = (tape: Tape): Tape => {
+  console.log(String.fromCharCode(current(tape)));
+  return tape;
 };
 
-const evaluate = (tm: TM, code: Command[], index = 0): TM => {
-  if (index >= code.length) return tm;
-  const nextTm = evaluateCommand(tm, code[index]);
-  return evaluate(nextTm, code, index + 1);
+const FIX = (f: Function) => (x: any) => f(FIX(f))(x);
+
+const loop = (commandList: FUNC[]): FUNC => {
+  const self = FIX((recur: (tape: Tape) => Tape) => (tape: Tape): Tape => {
+    if (isZero(current(tape))) return tape;
+    else return recur(evaluate(tape)(commandList));
+  });
+
+  return self;
 };
 
-const evaluateCommand = (tm: TM, command: Command): TM => {
-  console.log(show(tm), showCommand(command));
-  if (command.type === CommandType.INC) return inc(tm);
-  if (command.type === CommandType.DEC) return dec(tm);
-  if (command.type === CommandType.RIGHT) return right(tm);
-  if (command.type === CommandType.LEFT) return left(tm);
-  if (command.type === CommandType.PRINT) return _print(tm);
-  if (command.type === CommandType.LOOP)
-    return loop(tm, (tm) => evaluate(tm, command.value ?? []));
-  throw new Error('Unknown command');
-};
+const evaluate = FIX(
+  (recur: (tape: Tape) => (code: FUNC[]) => Tape) =>
+    (tape: Tape) =>
+    (code: FUNC[]): Tape => {
+      if (isNil(code)) return tape;
+      else return recur(car(code)(tape))(cdr(code));
+    }
+);
 
-const code: Command[] = [
-  INC,
-  INC,
-  INC,
-  INC,
-  INC,
-  INC,
-  INC,
-  INC,
-  INC,
-  INC,
-  LOOP([DEC, RIGHT, INC, INC, INC, INC, INC, INC, INC, INC, INC, INC, LEFT]),
-  RIGHT,
-  PRINT,
-  INC,
-  PRINT,
+const code: FUNC[] = [
+  inc,
+  inc,
+  inc,
+  inc,
+  inc,
+  inc,
+  inc,
+  inc,
+  inc,
+  inc,
+  loop([dec, right, inc, inc, inc, inc, inc, inc, inc, inc, inc, inc, left]),
+  right,
+  inc,
+  _print,
+  inc,
+  _print,
+  inc,
+  _print,
 ];
 
-const code2: Command[] = [
-  RIGHT,
-  INC,
-  RIGHT,
-  INC,
-  INC,
-  RIGHT,
-  INC,
-  INC,
-  INC,
-  LEFT,
-  LEFT,
-  LEFT,
-  LEFT,
-];
-
-const turingMachine = new TM();
-evaluate(turingMachine, code2);
+evaluate(newTape([])(0)([]))(code);

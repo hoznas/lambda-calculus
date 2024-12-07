@@ -50,12 +50,10 @@ const _print: FUNC = (tape: Tape): Tape => {
 const FIX = (f: Function) => (x: any) => f(FIX(f))(x);
 
 const loop = (commandList: FUNC[]): FUNC => {
-  const self = FIX((recur: (tape: Tape) => Tape) => (tape: Tape): Tape => {
+  return FIX((recur: (tape: Tape) => Tape) => (tape: Tape): Tape => {
     if (isZero(current(tape))) return tape;
     else return recur(evaluate(tape)(commandList));
   });
-
-  return self;
 };
 
 const evaluate = FIX(

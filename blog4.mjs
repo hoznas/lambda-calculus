@@ -42,9 +42,9 @@ console.log('====== blog4.mjs ======');
 // const RIGHT = (p) => p(FALSE); // 定義済み
 
 const showTape = (tape) => {
-  const left = TO_ARRAY(LEFT_TAPE(tape));
+  const left = TO_ARRAY(LEFT_PART(tape));
   const current = TO_INT(CURRENT(tape));
-  const right = TO_ARRAY(RIGHT_TAPE(tape));
+  const right = TO_ARRAY(RIGHT_PART(tape));
 
   return left.reverse().join(',') + ',[' + current + '],' + right.join(',');
 };
@@ -53,24 +53,24 @@ const LEFT_OR_ZERO = (halfTape) => IF(IS_NIL(halfTape))(ZERO)(LEFT(halfTape));
 
 const NEW_TAPE = (left) => (current) => (right) =>
   PAIR(left)(PAIR(current)(right));
-const LEFT_TAPE = LEFT;
+const LEFT_PART = LEFT;
 const CURRENT = (tape) => LEFT(RIGHT(tape));
-const RIGHT_TAPE = (tape) => RIGHT(RIGHT(tape));
+const RIGHT_PART = (tape) => RIGHT(RIGHT(tape));
 
 const TM_INC = (tape) => (x) =>
-  NEW_TAPE(LEFT_TAPE(tape))(INC(CURRENT(tape)))(RIGHT_TAPE(tape));
+  NEW_TAPE(LEFT_PART(tape))(INC(CURRENT(tape)))(RIGHT_PART(tape));
 
 const TM_DEC = (tape) => (x) =>
-  NEW_TAPE(LEFT_TAPE(tape))(DEC(CURRENT(tape)))(RIGHT_TAPE(tape));
+  NEW_TAPE(LEFT_PART(tape))(DEC(CURRENT(tape)))(RIGHT_PART(tape));
 
 const TM_RIGHT = (tape) => (x) =>
-  NEW_TAPE(PAIR(CURRENT(tape))(LEFT_TAPE(tape)))(
-    LEFT_OR_ZERO(RIGHT_TAPE(tape))
-  )(RIGHT(RIGHT_TAPE(tape)));
+  NEW_TAPE(PAIR(CURRENT(tape))(LEFT_PART(tape)))(
+    LEFT_OR_ZERO(RIGHT_PART(tape))
+  )(RIGHT(RIGHT_PART(tape)));
 
 const TM_LEFT = (tape) => (x) =>
-  NEW_TAPE(RIGHT(LEFT_TAPE(tape)))(LEFT_OR_ZERO(LEFT_TAPE(tape)))(
-    PAIR(CURRENT(tape))(RIGHT_TAPE(tape))
+  NEW_TAPE(RIGHT(LEFT_PART(tape)))(LEFT_OR_ZERO(LEFT_PART(tape)))(
+    PAIR(CURRENT(tape))(RIGHT_PART(tape))
   );
 
 const TM_PRINT = (tape) => (x) => {
@@ -78,19 +78,20 @@ const TM_PRINT = (tape) => (x) => {
   return tape;
 };
 
-const FIX2 = (f) => (x) => f(FIX2(f))(x);
+// const FIX = (f) => f(f);
+const TM_LOOP = FIX(
+  (recur) => (list) => (tape) => (x) =>
+    IF(IS_ZERO(CURRENT(tape)))((x) => tape)((x) =>
+      recur(recur)(list)(EVAL_LIST(list)(tape)(x))(x)
+    )(x)
+);
 
-const TM_LOOP = (commandList) => (tape) => (x) =>
-  IF(IS_ZERO(CURRENT(tape)))((x) => tape)((x) =>
-    TM_LOOP(commandList)(EVAL_LIST(commandList)(tape)(x))(x)
-  )(x);
-
-const EVAL_LIST = (list) => (tape) => (x) =>
-  IF(IS_NIL(list))((x) => tape)((x) =>
-    EVAL_LIST(RIGHT(list))(LEFT(list)(tape)(x))(x)
-  )(x);
-
-const tape = NEW_TAPE(NIL)(ZERO)(NIL);
+const EVAL_LIST = FIX(
+  (recur) => (list) => (tape) => (x) =>
+    IF(IS_NIL(list))((x) => tape)((x) =>
+      recur(recur)(RIGHT(list))(LEFT(list)(tape)(x))(x)
+    )(x)
+);
 
 const toConsList = (arr) => arr.reduceRight((acc, x) => PAIR(x)(acc), NIL);
 
@@ -123,12 +124,9 @@ const code = toConsList([
     ])
   ),
   TM_RIGHT,
-  TM_DEC,
-  TM_DEC,
-  TM_DEC,
-  TM_PRINT,
-  TM_INC,
   TM_PRINT,
 ]);
+
+const tape = NEW_TAPE(NIL)(ZERO)(NIL);
 
 EVAL_LIST(code)(tape)('dummy');

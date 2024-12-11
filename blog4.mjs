@@ -34,6 +34,7 @@ import {
   Z,
   ZERO,
 } from './blog3.mjs';
+
 console.log('====== blog4.mjs ======');
 
 // 定義

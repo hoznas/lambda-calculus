@@ -37,66 +37,75 @@ import {
 
 console.log('====== blog4.mjs ======');
 
-// 定義
+// 定義（参考）
 // const PAIR = (x) => (y) => (p) => p(x)(y); // 定義済み
 // const LEFT = (p) => p(TRUE); // 定義済み
 // const RIGHT = (p) => p(FALSE); // 定義済み
 
-const showTape = (tape) => {
-  const left = TO_ARRAY(LEFT_PART(tape));
-  const current = TO_INT(CURRENT(tape));
-  const right = TO_ARRAY(RIGHT_PART(tape));
-
-  return left.reverse().join(',') + ',[' + current + '],' + right.join(',');
-};
-
-const LEFT_OR_ZERO = (halfTape) => IF(IS_NIL(halfTape))(ZERO)(LEFT(halfTape));
-
+// テープの生成と操作
 const NEW_TAPE = (left) => (current) => (right) =>
   PAIR(left)(PAIR(current)(right));
 const LEFT_PART = LEFT;
 const CURRENT = (tape) => LEFT(RIGHT(tape));
 const RIGHT_PART = (tape) => RIGHT(RIGHT(tape));
 
-const TM_INC = (tape) => (x) =>
+const LEFT_OR_ZERO = (halfTape) => IF(IS_NIL(halfTape))(ZERO)(LEFT(halfTape));
+
+//テープの中身を表示（補助関数）
+const showTape = (tape) => {
+  const left = TO_ARRAY(LEFT_PART(tape));
+  const current = TO_INT(CURRENT(tape));
+  const right = TO_ARRAY(RIGHT_PART(tape));
+  return left.reverse().join(',') + ',[' + current + '],' + right.join(',');
+};
+
+// Brainf*ckの命令セット
+// +
+const TM_INC = (tape) => (_) =>
   NEW_TAPE(LEFT_PART(tape))(INC(CURRENT(tape)))(RIGHT_PART(tape));
-
-const TM_DEC = (tape) => (x) =>
+// -
+const TM_DEC = (tape) => (_) =>
   NEW_TAPE(LEFT_PART(tape))(DEC(CURRENT(tape)))(RIGHT_PART(tape));
-
-const TM_RIGHT = (tape) => (x) =>
+// >
+const TM_RIGHT = (tape) => (_) =>
   NEW_TAPE(PAIR(CURRENT(tape))(LEFT_PART(tape)))(
     LEFT_OR_ZERO(RIGHT_PART(tape))
   )(RIGHT(RIGHT_PART(tape)));
-
-const TM_LEFT = (tape) => (x) =>
+// <
+const TM_LEFT = (tape) => (_) =>
   NEW_TAPE(RIGHT(LEFT_PART(tape)))(LEFT_OR_ZERO(LEFT_PART(tape)))(
     PAIR(CURRENT(tape))(RIGHT_PART(tape))
   );
-
-const TM_PRINT = (tape) => (x) => {
+// .
+const TM_PRINT = (tape) => (_) => {
   console.log(TO_INT(CURRENT(tape)));
   return tape;
 };
+// ,
+// 未実装
 
-// const FIX = (f) => f(f);
+// ループ命令　[と]
 const TM_LOOP = FIX(
-  (recur) => (list) => (tape) => (x) =>
-    IF(IS_ZERO(CURRENT(tape)))((x) => tape)((x) =>
-      recur(recur)(list)(EVAL_LIST(list)(tape)(x))(x)
-    )(x)
+  (recur) => (list) => (tape) => (_) =>
+    IF(IS_ZERO(CURRENT(tape)))((_) => tape)((_) =>
+      recur(recur)(list)(EVAL_LIST(list)(tape)(_))(_)
+    )(_)
 );
 
+// Brainf*ckの命令を実行
 const EVAL_LIST = FIX(
-  (recur) => (list) => (tape) => (x) =>
-    IF(IS_NIL(list))((x) => tape)((x) =>
-      recur(recur)(RIGHT(list))(LEFT(list)(tape)(x))(x)
-    )(x)
+  (recur) => (list) => (tape) => (_) =>
+    IF(IS_NIL(list))((_) => tape)((_) =>
+      recur(recur)(RIGHT(list))(LEFT(list)(tape)(_))(_)
+    )(_)
 );
 
-const toConsList = (arr) => arr.reduceRight((acc, x) => PAIR(x)(acc), NIL);
+// 配列をペアリストに変換（補助関数）
+const toPairList = (ary) => ary.reduceRight((acc, cmd) => PAIR(cmd)(acc), NIL);
 
-const code = toConsList([
+// Brainf*ckコード
+// ++++++++++[->++++++++++<]>. と同じ
+const code = toPairList([
   TM_INC,
   TM_INC,
   TM_INC,
@@ -108,7 +117,7 @@ const code = toConsList([
   TM_INC,
   TM_INC,
   TM_LOOP(
-    toConsList([
+    toPairList([
       TM_DEC,
       TM_RIGHT,
       TM_INC,
@@ -128,6 +137,10 @@ const code = toConsList([
   TM_PRINT,
 ]);
 
+// テープの初期化
 const tape = NEW_TAPE(NIL)(ZERO)(NIL);
 
-EVAL_LIST(code)(tape)('dummy');
+// コードの実行
+// 第3引数はダミーで使用されない
+const result = EVAL_LIST(code)(tape)(NIL);
+console.log('tape=', showTape(result)); // 0,[100],

@@ -140,8 +140,7 @@ const code = toPairList([
   TM_PRINT,
 ]);
 
-// const code =
-// PAIR(TM_INC)(
+// const code2 = PAIR(TM_INC)(
 //   PAIR(TM_INC)(
 //     PAIR(TM_INC)(
 //       PAIR(TM_INC)(

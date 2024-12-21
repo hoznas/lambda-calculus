@@ -45,11 +45,14 @@ console.log('====== blog4.mjs ======');
 // テープの生成と操作
 const NEW_TAPE = (left) => (current) => (right) =>
   PAIR(left)(PAIR(current)(right));
+
 const LEFT_PART = LEFT;
 const CURRENT = (tape) => LEFT(RIGHT(tape));
 const RIGHT_PART = (tape) => RIGHT(RIGHT(tape));
 
-const LEFT_OR_ZERO = (halfTape) => IF(IS_NIL(halfTape))(ZERO)(LEFT(halfTape));
+const PUSH = PAIR;
+const POP_OR_ZERO = (halfTape) => IF(IS_NIL(halfTape))(ZERO)(LEFT(halfTape));
+const REST = RIGHT;
 
 //テープの中身を表示（補助関数）
 const showTape = (tape) => {
@@ -68,13 +71,13 @@ const TM_DEC = (tape) => (_) =>
   NEW_TAPE(LEFT_PART(tape))(DEC(CURRENT(tape)))(RIGHT_PART(tape));
 // >
 const TM_RIGHT = (tape) => (_) =>
-  NEW_TAPE(PAIR(CURRENT(tape))(LEFT_PART(tape)))(
-    LEFT_OR_ZERO(RIGHT_PART(tape))
-  )(RIGHT(RIGHT_PART(tape)));
+  NEW_TAPE(PUSH(CURRENT(tape))(LEFT_PART(tape)))(POP_OR_ZERO(RIGHT_PART(tape)))(
+    REST(RIGHT_PART(tape))
+  );
 // <
 const TM_LEFT = (tape) => (_) =>
-  NEW_TAPE(RIGHT(LEFT_PART(tape)))(LEFT_OR_ZERO(LEFT_PART(tape)))(
-    PAIR(CURRENT(tape))(RIGHT_PART(tape))
+  NEW_TAPE(REST(LEFT_PART(tape)))(POP_OR_ZERO(LEFT_PART(tape)))(
+    PUSH(CURRENT(tape))(RIGHT_PART(tape))
   );
 // .
 const TM_PRINT = (tape) => (_) => {
@@ -137,10 +140,61 @@ const code = toPairList([
   TM_PRINT,
 ]);
 
+// const code =
+// PAIR(TM_INC)(
+//   PAIR(TM_INC)(
+//     PAIR(TM_INC)(
+//       PAIR(TM_INC)(
+//         PAIR(TM_INC)(
+//           PAIR(TM_INC)(
+//             PAIR(TM_INC)(
+//               PAIR(TM_INC)(
+//                 PAIR(TM_INC)(
+//                   PAIR(TM_INC)(
+//                     PAIR(
+//                       TM_LOOP(
+//                         PAIR(TM_DEC)(
+//                           PAIR(TM_RIGHT)(
+//                             PAIR(TM_INC)(
+//                               PAIR(TM_INC)(
+//                                 PAIR(TM_INC)(
+//                                   PAIR(TM_INC)(
+//                                     PAIR(TM_INC)(
+//                                       PAIR(TM_INC)(
+//                                         PAIR(TM_INC)(
+//                                           PAIR(TM_INC)(
+//                                             PAIR(TM_INC)(
+//                                               PAIR(TM_INC)(PAIR(TM_LEFT)(NIL))
+//                                             )
+//                                           )
+//                                         )
+//                                       )
+//                                     )
+//                                   )
+//                                 )
+//                               )
+//                             )
+//                           )
+//                         )
+//                       )
+//                     )(PAIR(TM_RIGHT)(PAIR(TM_PRINT)(NIL)))
+//                   )
+//                 )
+//               )
+//             )
+//           )
+//         )
+//       )
+//     )
+//   )
+// );
+
 // テープの初期化
 const tape = NEW_TAPE(NIL)(ZERO)(NIL);
 
 // コードの実行
-// 第3引数はダミーで使用されない
+// 第3引数はダミーで評価されない
 const result = EVAL_LIST(code)(tape)(NIL);
+
+// console.log('curr=', TO_INT(LEFT(RIGHT(result)))); // 0,[100],
 console.log('tape=', showTape(result)); // 0,[100],
